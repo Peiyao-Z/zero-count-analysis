@@ -10,8 +10,7 @@ library(gee)
 library(geepack)
 library(pscl)
 
-#set.seed(123)
-datapath = "/net/mulan/disk2/peiyao/"
+datapath = "datapath"
 
 total = function(dat){
   
@@ -130,7 +129,6 @@ saveRDS(AIC_sum,"NiCHE-seq_sum.rds")
 
 
 # seqFISH+
-#setwd("D:/droplet/seqFISH")
 dat<-read.csv(paste0(datapath,"ob_counts.csv"))
 dat<-t(dat)
 newDat = readRDS(paste0("AIC_offset/","seqFISH+","_sum.rds"))
@@ -140,7 +138,6 @@ rm(dat,AIC_sum)
 
 
 ## # #STARmap ------------
-## #setwd("D:/droplet/STARmap/")
 dat<-read.csv(paste0(datapath,"STARmap.csv"),header = F)
 dat<-t(dat)
 newDat = readRDS(paste0("AIC_offset/","STARmap","_sum.rds"))
@@ -150,7 +147,6 @@ rm(dat,AIC_sum)
 
 
 ## Slide-seq ----
-#setwd("D:/droplet/Slideseq")
 dat<-readRDS(paste0(datapath,"Slide-seq.rds"))
 newDat = readRDS(paste0("AIC_offset/","Slide-seq","_sum.rds"))
 AIC_sum = total(dat)
@@ -160,7 +156,6 @@ rm(dat,AIC_sum)
 
 
 ## tomo-seq -------
-##setwd("D:/droplet/tomo-seq/")
 dat<-read.table(paste0(datapath,"GSM3148567_Male.animal.1.ReadCounts.tsv"),stringsAsFactors = F,header = T)
 dat<-dat %>% remove_rownames %>% column_to_rownames(var=names(dat)[1])
 newDat = readRDS(paste0("AIC_offset/","Tomo-seq","_sum.rds"))
@@ -172,7 +167,6 @@ rm(dat,AIC_sum)
 
 
 ##LCM -----------
-## #setwd("D:/droplet/LCM/")
 dat<-read.csv(paste0(datapath,"LCM.tsv"),sep = "\t")
 dat<-dat %>% remove_rownames %>% column_to_rownames(var=names(dat)[1])
 newDat = readRDS(paste0("AIC_offset/","LCM","_sum.rds"))
@@ -182,7 +176,6 @@ rm(dat,AIC_sum)
 
 
 ##liver single cell ------
-##setwd("D:/droplet/liver single cell/")
 dat<-read.csv(paste0(datapath,"GSE108561_NPC_umitab.txt"),sep = "\t")
 dat<-dat %>% remove_rownames %>% column_to_rownames(var=names(dat)[1])
 # newDat = readRDS(paste0("AIC_offset/","PC-seq","_sum.rds"))
@@ -192,7 +185,6 @@ rm(dat,AIC_sum)
 
 
 #ST -----------
-#setwd("D:/droplet/MOB - ST/")
 dat<-read.csv(paste0(datapath,"L8CN18_D1_stdata_aligned_counts_IDs_ALS.txt"),sep = "\t",row.names = NULL)
 dat<-dat[!duplicated(dat[,1]),]
 dat<-dat %>% remove_rownames %>% column_to_rownames(var=names(dat)[1])
@@ -301,7 +293,6 @@ rm(dat,AIC_sum)
 
 
 #HDST-------
-#setwd("D:/droplet/HDST/")
 load(paste0(datapath,"CN24_D1_unmodgtf_filtered_red_ut_HDST_final_clean.rds"))
 dat<-sp_count
 rm(sp_count)
