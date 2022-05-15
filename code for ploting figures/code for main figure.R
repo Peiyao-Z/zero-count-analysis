@@ -91,33 +91,41 @@ saveRDS(total,"./overdispersionParam.rds")
 fourList<-c('seqFISH+','Slide-seqV2','10x_MB(C)')
 
 ## figure 1 ----
-zero<-readRDS("./readDepth_and_zeroProp.rds")
+zero<-readRDS("readDepth_and_zeroProp.rds")
 zero$model<-factor(zero$model,levels = list)
 oneA = ggplot(data = zero, mapping = aes( x=model,y = zeroProp, fill = model))+ geom_col(position =  "stack")+
   labs(y='Zero Proportion',x="")+theme_bw()+
-  geom_vline(aes(xintercept=c(3.5),linetype = "smFISH"),color = "darkgray",size = 1,key_glyph = "path")+
-  geom_vline(aes(xintercept=c(8.5),linetype = "single cell"),color = "darkgray",size = 1,key_glyph = "path")+
-  theme(axis.text.x = element_text(angle = 90,vjust = 0,size=20,face = "bold",hjust = 0.5),
+  geom_vline(aes(xintercept=c(3.5),linetype = "smFISH"),color = "darkgray",size = 1,key_glyph = "path",show.legend = F)+
+  geom_vline(aes(xintercept=c(8.5),linetype = "single cell"),color = "darkgray",size = 1,key_glyph = "path",show.legend = F)+
+  theme(axis.text.x = element_blank(),
+        # axis.text.x = element_text(angle = 90,vjust = 0,size=20,face = "bold",hjust = 0.5),
         axis.ticks = element_blank(),
-        legend.position = "none",
-        axis.title = element_text(size=20,face = "bold"),
-        axis.text.y = element_text(size=20,face = "bold"))+
+        axis.title.y = element_text(size=20,face = "bold"),
+        # axis.text.y = element_text(size=20,face = "bold"),
+        axis.text.y = element_blank())+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))+
   guides(colour = guide_legend(order = 1), 
-         shape = guide_legend(order = 2))
+         shape = guide_legend(order = 2))+
+  theme(legend.position = "top",
+      legend.title=element_blank(),
+      legend.text = element_text(size=20),
+      plot.margin = unit(c(0,30,0,0), "pt"),
+      legend.box.margin=margin(20,20,20,20))+
+  guides(color=guide_legend(nrow=3))
 
 ggsave('oneA.png',dpi = 2000,width = 7.53 , height = 5.72)
 rm(tmp,zero)
 
 tmp<-readRDS("./readDepth_and_zeroProp.rds")
 tmp$model<-factor(tmp$model,levels = list)
-tmp = tmp[tmp$model!="Tomo-seq",]
-tt=tmp[which(tmp$model!=c("MERFISH","seqFISH")),]
+# tmp = tmp[tmp$model!="Tomo-seq",]
+tt=tmp[which(!(tmp$model%in%c("MERFISH","seqFISH",'Tomo-seq'))),]
 oneB = ggplot()+ 
   geom_point(data = tmp, mapping = aes(x=readDepth,y = logit(zeroProp),colour=model),size = 7)+
   #geom_text(aes(label=model),hjust=0, vjust=1,size = 6)+
   labs(y='Zero Proportion',x="Read depth per location")+theme_bw()+
+  xlim(0,42000)+
   theme(legend.text=element_text(size=20,color = 'black'),
         axis.title=element_text(size=20,color = 'black',face = 'bold'),
         axis.text = element_text(size=20,color = 'black'),
@@ -127,15 +135,26 @@ oneB = ggplot()+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))+
   scale_y_continuous(labels=c("-4" = "0.02", "0" = "0.50","4" = "0.98", "8" = "1.00"))+
-  geom_smooth(data = tt,mapping = aes(x=readDepth,y = logit(zeroProp)),color = "black",alpha=0.25)
+  geom_smooth(data = tt,mapping = aes(x=readDepth,y = logit(zeroProp)),color = "black",alpha=0.25)+
+  theme(legend.position = "top",
+        legend.title=element_blank(),
+        legend.text = element_text(size=20),
+        plot.margin = unit(c(0,30,0,0), "pt"),
+        legend.box.margin=margin(20,20,20,20))+
+  guides(color=guide_legend(nrow=3))
 rm(tmp)
-
-ggplot(data = tmp,mapping = aes(x=readDepth,y = logit(zeroProp),colour=model))+ 
-  geom_point( size = 7)+
-  geom_text(data = tmp,aes(label=model),hjust=0, vjust=1,size = 6)+
-  labs(y='Zero Proportion',x="Read depth per location")+theme_bw()
+# 
+# ggplot(data = tmp,mapping = aes(x=readDepth,y = logit(zeroProp),colour=model))+ 
+#   geom_point( size = 7)+
+#   geom_text(data = tmp,aes(label=model),hjust=0, vjust=1,size = 6)+
+#   labs(y='Zero Proportion',x="Read depth per location")+theme_bw()
 
 ggsave('oneB.png',dpi = 2000,width = 7.53 , height = 5.72)
+
+plt = ggarrange(oneA,oneB,common.legend = TRUE, legend="top")
+ggsave('plot/oneAB.png',dpi = 1500,width = 15 , height = 5.72)
+
+
 
 fourList<-c('seqFISH+','Slide-seqV2','10x_MB(C)')
 meanZero<-list()
@@ -228,17 +247,22 @@ tmp = data.frame(proportion=pp)
 tmp$model = factor(list,levels = list)
 twoA = ggplot(data = tmp, mapping = aes(x = model, y = proportion,color=model))+ geom_point(size = 5)+#geom_line(size=1.3,group = 1)+
   labs(y='Genes with variance > mean (%)',x='')+theme_bw()+
-  geom_vline(aes(xintercept=c(5.5),linetype = "smFISH"),color = "grey",size = 1,key_glyph = "path")+
-  geom_vline(aes(xintercept=c(8.5),linetype = "non-UMI data"),color = "grey",size = 1,key_glyph = "path")+
+  geom_vline(aes(xintercept=c(3.5),linetype = "smFISH"),color = "grey",size = 1,key_glyph = "path",show.legend = F)+
+  geom_vline(aes(xintercept=c(8.5),linetype = "non-UMI data"),color = "grey",size = 1,key_glyph = "path",show.legend = F)+
   theme(axis.title=element_text(size=20,face = "bold"),
-        legend.position = "none",
         axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         axis.text.y = element_text(size=20),
         plot.title = element_text (hjust = 0.5))+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))+
   guides(colour = guide_legend(order = 1), 
-         shape = guide_legend(order = 2))
+         shape = guide_legend(order = 2))+
+  theme(legend.position = "top",
+        legend.title=element_blank(),
+        legend.text = element_text(size=20),
+        plot.margin = unit(c(0,30,0,0), "pt"),
+        legend.box.margin=margin(20,20,20,20))+
+  guides(color=guide_legend(nrow=3))
 
 ggsave('twoA.png',dpi = 2000,width = 7.3 , height = 5.72)
 
@@ -256,8 +280,8 @@ tt$model = factor(tt$model,levels = list)
 
 twoB = ggplot(tt,aes(x = model, y = x,color = model)) + geom_boxplot(size=1.3)+#geom_line(size=1.3,group = 1)+
   labs(y='Ratio of variance to mean',x="")+theme_bw()+#ylim(0,64)+
-  geom_vline(aes(xintercept=c(3.5),linetype = "smFISH"),color = "grey",size = 1,key_glyph = "path")+
-  geom_vline(aes(xintercept=c(8.5),linetype = "single-cell"),color = "grey",size = 1,key_glyph = "path")+
+  geom_vline(aes(xintercept=c(3.5),linetype = "smFISH"),color = "grey",size = 1,key_glyph = "path",show.legend = F)+
+  geom_vline(aes(xintercept=c(8.5),linetype = "single-cell"),color = "grey",size = 1,key_glyph = "path",show.legend = F)+
   geom_hline(aes(yintercept=(1),linetype = "twodash"),size = 1.5)+
   theme(strip.text.x = element_text(size = 20,face = "bold"),axis.title=element_text(size=20,face = "bold"),
         legend.position = "none",
@@ -269,9 +293,18 @@ twoB = ggplot(tt,aes(x = model, y = x,color = model)) + geom_boxplot(size=1.3)+#
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))+
   guides(colour = guide_legend(order = 1), 
          shape = guide_legend(order = 2))+
-  scale_y_continuous(trans="log2")
+  scale_y_continuous(trans="log2")+
+  theme(legend.position = "top",
+        legend.title=element_blank(),
+        legend.text = element_text(size=20),
+        plot.margin = unit(c(0,30,0,0), "pt"),
+        legend.box.margin=margin(20,20,20,20))+
+  guides(color=guide_legend(nrow=3))
 
 ggsave('twoB.png',dpi = 2000,width = 7.53 , height = 5.72)
+
+plt = ggarrange(twoA,twoB,common.legend = TRUE, legend="top")
+ggsave('plot/twoAB.png',dpi = 1500,width = 15 , height = 5.72)
 
 
 meanVar = list()
