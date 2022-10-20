@@ -1,5 +1,6 @@
 
-#source("function.R")
+source("function_offset.R")
+
 ofset<-colSums(dat)
 sum_stat <- data.frame(rownames(dat))
 
