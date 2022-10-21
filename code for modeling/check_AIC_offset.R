@@ -71,36 +71,36 @@ total = function(dat){
     })
   }
   
-  compare = function(arr,tt){
-    tryCatch({
-      arr=as.numeric(arr)
-      tmp <- gee(arr~1+offset(log(tt)), id=c(1:length(arr)), family = poisson(link = "log"))
-      mu = exp(coef(tmp)+log(tt))
-      yy = mu*tmp$scale
-      model<- lm(yy ~  1* mu + I(mu^2) + 0 )
-      th=1/coef(model)
-      loglik <- function(th, mu, y) sum( (lgamma(th + y) - lgamma(th) - lgamma(y + 1) + th * log(th) + y *
-                                            log(mu + (y == 0)) - (th + y) * log(th + mu)))
-      nb = loglik(th = th, mu = mu, y=arr)
-      po = logLik(glm(arr ~ offset(log(tt)),family = "poisson"))
-      znb = logLik(zeroinfl(arr ~ 1+offset(log(tt))|1,dist = "negbin"))
-
-      pchisq(-2*(po-nb),df=1)
-      pchisq(-2*(nb-znb),df=1)
-      return(data.frame(mom_vsP = pchisq(-2*(po-nb),df=1),mom_vsZINB = pchisq(-2*(nb-znb),df=1)))
-    },error=function(e){
-      return(data.frame(mom_vsP = NA, mom_vsZINB = NA))
-    })
-  }
+  ## this compare function calculate the same value of mom_vsP and mom_vsZINB as those calcualted from lik function. 
+  # compare = function(arr,tt){
+    # tryCatch({
+      # arr=as.numeric(arr)
+      # tmp <- gee(arr~1+offset(log(tt)), id=c(1:length(arr)), family = poisson(link = "log"))
+      # mu = exp(coef(tmp)+log(tt))
+      # yy = mu*tmp$scale
+      # model<- lm(yy ~  1* mu + I(mu^2) + 0 )
+      # th=1/coef(model)
+      # loglik <- function(th, mu, y) sum( (lgamma(th + y) - lgamma(th) - lgamma(y + 1) + th * log(th) + y *
+      #                                      log(mu + (y == 0)) - (th + y) * log(th + mu)))
+      # nb = loglik(th = th, mu = mu, y=arr)
+      # po = logLik(glm(arr ~ offset(log(tt)),family = "poisson"))
+      # znb = logLik(zeroinfl(arr ~ 1+offset(log(tt))|1,dist = "negbin"))
+      # pchisq(-2*(po-nb),df=1)
+      # pchisq(-2*(nb-znb),df=1)
+      # return(data.frame(mom_vsP = pchisq(-2*(po-nb),df=1),mom_vsZINB = pchisq(-2*(nb-znb),df=1)))
+    # },error=function(e){
+      # return(data.frame(mom_vsP = NA, mom_vsZINB = NA))
+    # })
+  # }
   
-  number_of_cores= 60
+  number_of_cores = 60
   # number_of_cores <- parallel::detectCores() - 1
   clusters <- parallel::makeCluster(number_of_cores)
   doParallel::registerDoParallel(clusters)
   warn2 = foreach(i=1:nrow(dat), .combine = rbind,.packages = c('Matrix','MASS'))%dopar% warn(dat[i,],tt)
   error2 = foreach(i=1:nrow(dat), .combine = rbind,.packages = c('Matrix','MASS'))  %dopar%  err(dat[i,],tt)
   lik = foreach(i=1:nrow(dat), .combine = rbind,.packages = c('Matrix','MASS','geepack','gee','pscl'))  %dopar%  lik(dat[i,],tt)
-  tmp = foreach(i=1:nrow(dat), .combine = rbind,.packages = c('Matrix','MASS','geepack','gee','pscl')) %dopar% compare(dat[i,],tt = tt)
+  # tmp = foreach(i=1:nrow(dat), .combine = rbind,.packages = c('Matrix','MASS','geepack','gee','pscl')) %dopar% compare(dat[i,],tt = tt)
   parallel::stopCluster(clusters)
   
   tt = as.numeric(warn2)
@@ -110,8 +110,8 @@ total = function(dat){
                        mu = lik$mu,
                        dispersion=lik$dispersion,
                        AIC=lik$AIC,
-                       mom_vsP = tmp$mom_vsP,
-                       mom_vsZINB = tmp$mom_vsZINB)
+                       mom_vsP =lik$mom_vsP,
+                       mom_vsZINB = lik$mom_vsZINB)
 
   # newDat$mom_vsP = tmp$mom_vsP
   # newDat$mom_vsZINB = tmp$mom_vsZINB
