@@ -43,7 +43,7 @@ rownames(spatial_location) = colnames(spatial_count)
 spatial_location = as.data.frame(spatial_location)
 colnames(spatial_location) = c('x','y')
 
-load(paste0(DATAPATH,"Human_Developmental_heart.sceset"))
+load(paste0(DATAPATH,"Azizi.BC.sceset"))
 ct.varname = "cellType"
 sample.varname = "sampleID"
 ct.select = unique(colData(eset)$cellType)
@@ -234,7 +234,7 @@ spatial_location = spatial_location[match(colnames(spatial_count),rownames(spati
 spatial_location = spatial_location[,c('V5','V6')]
 colnames(spatial_location) = c('x','y')
 
-load(paste0(DATAPATH,"Human_Developmental_heart.sceset"))
+load(paste0(DATAPATH,"Azizi.BC.sceset"))
 ct.varname = "cellType"
 sample.varname = "sampleID"
 ct.select = unique(colData(eset)$cellType)
